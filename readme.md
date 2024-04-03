@@ -32,3 +32,33 @@ Publicly demonstrates experience using a 3rd party library and how to encrypt/de
 - Key not leaked
 - Program is available on github.com
 - Readme.md adequately describes program and algorithm.
+
+___
+
+
+How I think I want to interact with this:
+
+encrypt text to stdio:
+
+`$ post_it "super secret"`
+
+
+encrypt text into encrypted file:
+
+`$ post_it "super secret" secret.enc`
+
+
+encrypt raw input file to stdio:
+
+`$ post_it raw.txt`
+
+
+read encrypted text to file.
+
+`$ post_it raw.txt secret.enc`
+
+... and all the operations in reverse, decrypting to the various outputs. 
+
+How do I know a file is plaintext or encrypted?
+
+
