@@ -59,6 +59,10 @@ read encrypted text to file.
 
 ... and all the operations in reverse, decrypting to the various outputs. 
 
-How do I know a file is plaintext or encrypted?
+TODO:
+* figure out whether file is plaintext or encrypted
+    - prefix the encrypted file content with a plaintext `post_it:`
+* provide a way to generate new key file
 
-
+I think I'll use:
+https://docs.rs/aes-gcm/latest/aes_gcm/
