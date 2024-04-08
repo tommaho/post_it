@@ -11,21 +11,25 @@ use std::io::{self, Read};
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
+use std::io::Write;
+
+use aes_gcm::{
+    aead::{Aead, AeadCore, KeyInit, OsRng},
+    Aes256Gcm, Nonce, Key // Or `Aes128Gcm`
+};
+
 fn main() {
     let parsed = parse_cli();
     
-    // I want to pass a reference to a struct to a function that will return 
-    // either the string value entered at the command line or the contents of
-    // the file referenced by the file arg
-    // if no text is available at either, blow up
-    // 
-
     let arg_text = get_arg_text(&parsed);
     let arg_file = get_arg_file(&parsed);
+    let _arg_output = get_arg_out(&parsed);
 
-    let key = get_key().expect("Key file not found.");
+    let key = get_key().expect("There was an error with the key.");
 
     let mut raw_text = String::new();
+
+
 
     if let Some(text) = arg_text {
         raw_text = text;
@@ -47,17 +51,24 @@ fn main() {
         
     }
 
-    println!("Raw text: {}", raw_text);
+    if raw_text.len() == 0 {
 
-    println!("Key: {}", key);
+        panic!("Raw text has zero length.");
 
-    // let path = String::from("test_input.txt");
-    // let test = read_file(&path);
+    } else { 
 
-    // match test {
-    //     Ok(val) => println!("Test value: {}", val),
-    //     Err(_) => eprint!("Error."),
-    // }
+        println!("Raw text: {}", raw_text);
+
+        let cipher = Aes256Gcm::new(&key);
+        let nonce = Aes256Gcm::generate_nonce(&mut OsRng); 
+        let ciphertext = cipher.encrypt(&nonce, raw_text.as_ref()).expect("There was an encryption error.");
+    
+        let mut encrypted_file = File::create("encrypted.bin").expect("Failed to create encrypted file");
+        encrypted_file.write_all(&ciphertext).expect("Failed to write encrypted data to file");
+    
+
+        println!("Ciphertext: {:?}", ciphertext);
+    }
 
 
 }
@@ -134,17 +145,32 @@ fn get_arg_file(parsed: &ArgMatches) -> Option<String>{
     
 }
 
+fn get_arg_out(parsed: &ArgMatches) -> Option<String>{
 
-
-pub fn get_key() -> Result<String, io::Error> {
-
-    let mut key = String::new();
-
-    File::open("secrets/post_it.key")?.read_to_string(&mut key)?;
-
-    Ok(key)
+    parsed.get_one::<String>("output").map(|s| s.to_owned())
+    
 }
 
+// pub fn get_key() -> Result<String, io::Error> {
+
+//     let mut key = String::new();
+
+//     File::open("secrets/post_it.key")?.read_to_string(&mut key)?;
+
+//     Ok(key)
+// }
+
+
+fn get_key() -> Result<Key<Aes256Gcm>, io::Error> {
+
+    let mut key_bytes = [0u8; 32];
+
+    let mut file = File::open("secrets/post_it.key")?;
+    
+    file.read_exact(&mut key_bytes)?;
+
+    Ok(*Key::<Aes256Gcm>::from_slice(&key_bytes))
+}
 
 fn _encrypt() {
     println!("TODO");
