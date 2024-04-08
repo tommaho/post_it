@@ -19,26 +19,46 @@ fn main() {
     // the file referenced by the file arg
     // if no text is available at either, blow up
     // 
-    
-    let text = get_text(&parsed);
 
-    match text {
-        Ok(val)=> { // got text, proceed
-            
-            if let Ok(key) = get_key(){ // got a key, proceed
+    let arg_text = get_arg_text(&parsed);
+    let arg_file = get_arg_file(&parsed);
 
-                println!("Key is: {}", key);
+    let key = get_key().expect("Key file not found.");
 
-            } else {
-                panic!("Key not found. Key expected in secrets/post_it.key ");
+    let mut raw_text = String::new();
+
+    if let Some(text) = arg_text {
+        raw_text = text;
+
+        if let Some(_) = arg_file {
+            panic!("Cannot take both a text arg and a file arg!");
+        }      
+
+    } else {
+        if let Some(text) = arg_file {
+
+            let contents = std::fs::read_to_string(text);
+
+            match contents {
+                Ok(file_text) => raw_text = file_text,
+                _ => panic!("There was a problem with the file.")
             }
-
-            println!("Got a value: {}", val);
-       
-       
-        },
-        Err(err)=> println!("There was a problem: {}", err),
+        }
+        
     }
+
+    println!("Raw text: {}", raw_text);
+
+    println!("Key: {}", key);
+
+    // let path = String::from("test_input.txt");
+    // let test = read_file(&path);
+
+    // match test {
+    //     Ok(val) => println!("Test value: {}", val),
+    //     Err(_) => eprint!("Error."),
+    // }
+
 
 }
 
@@ -102,58 +122,16 @@ fn parse_cli() -> ArgMatches{
 
 }
 
+fn get_arg_text(parsed: &ArgMatches) -> Option<String>{
 
-fn get_text(parsed: &ArgMatches) -> Result<&String, &'static str>{
-    //println!("{:#?}", parsed);
+    parsed.get_one::<String>("text").map(|s| s.to_owned())
 
-    let text_arg = parsed.get_one::<String>("text");
-    let input_arg = parsed.get_one::<String>("input");
-
-    // if there's no text arg then use the file input arg
-    // if there's no text arg and no file input arg then panic
-    // if theres a text arg and a file input arg also panic
-
-    if let Some(text) = text_arg {
-
-        if let Some(_) = input_arg { 
-            Err("Cannot take both a text arg and a file arg!")
-        } else {
-            Ok(text)
-        }
-  
-    } else {
-
-        if let Some(input_file) = input_arg { 
-
-            // let file_text = read_input_file(input_file);
-            
-            // match file_text {
-            //     Ok(contents) => {
-            //         contents
-            //     },
-            //     Err(err) => Err("There was a file error: {}", err), 
-            // }
-
-            Ok(input_file) // needs to be the result of file read
-        } else {
-            Err("Input file error.")
-        }
-    }
 }
 
+fn get_arg_file(parsed: &ArgMatches) -> Option<String>{
 
-
-  
-
-
-// TODO Implement
-fn read_input_file(input_file: &String) -> Result<String, io::Error> {
+    parsed.get_one::<String>("input").map(|s| s.to_owned())
     
-    let mut text = String::new();
-
-    File::open(input_file)?.read_to_string(&mut text)?;
-
-    Ok(text)
 }
 
 
