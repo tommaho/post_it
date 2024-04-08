@@ -35,34 +35,20 @@ Publicly demonstrates experience using a 3rd party library and how to encrypt/de
 
 ___
 
+```shell
+Symmetric key encryption on the command line.
 
-How I think I want to interact with this:
+Usage: post_it [OPTIONS]
 
-encrypt text to stdio:
+Options:
+  -t, --text <TEXT>      Input text enclosed in double quotes, like "encrypt me".
+  -i, --input <INPUT>    Input file to read.
+  -o, --output <OUTPUT>  File to output.
+  -d, --debug            
+  -h, --help             Print help
+  -V, --version          Print version
+```
 
-`$ post_it "super secret"`
-
-
-encrypt text into encrypted file:
-
-`$ post_it "super secret" secret.enc`
-
-
-encrypt raw input file to stdio:
-
-`$ post_it raw.txt`
-
-
-read encrypted text to file.
-
-`$ post_it raw.txt secret.enc`
-
-... and all the operations in reverse, decrypting to the various outputs. 
-
-TODO:
-* figure out whether file is plaintext or encrypted
-    - prefix the encrypted file content with a plaintext `post_it:`
-* provide a way to generate new key file
 
 I think I'll use:
 https://docs.rs/aes-gcm/latest/aes_gcm/
