@@ -54,6 +54,9 @@ fn main() {
         println!("Raw text: {}", raw_text);
 
         // hackery ahead. I'm in over my head here.
+        // This implementation is incorrect, the nonce should not necessarily be stored
+        // outside the encrypted file, and it should NOT be re-used outside a single 
+        // encryption / decryption operation.
 
         let nonce = get_nonce().expect("Failed to retrieve nonce.");
         let cipher = Aes256Gcm::new(&key);

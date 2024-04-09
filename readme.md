@@ -36,7 +36,9 @@ Publicly demonstrates experience using a 3rd party library and how to encrypt/de
 ___
 
 ```shell
-Symmetric key encryption on the command line.
+Symmetric key encryption on the command line, via AES-GCM.
+
+$ post_it -h
 
 Usage: post_it [OPTIONS]
 
@@ -47,3 +49,4 @@ Options:
   -h, --help             Print help
   -V, --version          Print version
 ```
+
