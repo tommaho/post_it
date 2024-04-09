@@ -79,7 +79,7 @@ fn parse_cli() -> ArgMatches{
     Command::new("post_it")
     .version("0.1.0")
     .author("Tom <tcm18@pct.edu>")
-    .about("Symmetric key encryption on the command line.")
+    .about("Symmetric key encryption on the command line, via AES-GCM.")
     .arg(
         Arg::new("text")
             .value_name("TEXT")
