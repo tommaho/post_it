@@ -1,9 +1,4 @@
 ///
-/// cli input might be:
-/// post_it "raw text"
-/// post_it "raw text" out.file
-/// post_it in.file
-/// post_it in.file out.file
 /// 
 
 use std::fs::File;
@@ -13,6 +8,7 @@ use clap::{Arg, ArgAction, ArgMatches, Command};
 
 use std::io::Write;
 
+#[allow(unused_imports)]  //not sure what I'll need
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Nonce, Key // Or `Aes128Gcm`
@@ -21,9 +17,12 @@ use aes_gcm::{
 fn main() {
     let parsed = parse_cli();
     
-    let arg_text = get_arg_text(&parsed);
-    let arg_file = get_arg_file(&parsed);
-    let _arg_output = get_arg_out(&parsed);
+    let arg_text = get_arg(&parsed, "text");
+    
+
+    //let arg_text = get_arg_text(&parsed);
+    let arg_file = get_arg(&parsed, "input");
+    let _arg_output = get_arg(&parsed, "output");
 
     let key = get_key().expect("There was an error with the key.");
 
@@ -59,15 +58,27 @@ fn main() {
 
         println!("Raw text: {}", raw_text);
 
+        // hackery ahead. I'm in over my head here.
+
+        let mut nonce_file = File::open("secrets/nonce.bin").expect("Failed to open nonce.");
+        let mut nonce = [0u8; 12];
+        
+        nonce_file.read_exact(&mut nonce).expect("Failed to read nonce.");
+
         let cipher = Aes256Gcm::new(&key);
-        let nonce = Aes256Gcm::generate_nonce(&mut OsRng); 
-        let ciphertext = cipher.encrypt(&nonce, raw_text.as_ref()).expect("There was an encryption error.");
+        let ciphertext = cipher.encrypt((&nonce).into(), raw_text.as_ref()).expect("There was an encryption error.");
     
-        let mut encrypted_file = File::create("encrypted.bin").expect("Failed to create encrypted file");
+        let mut encrypted_file = File::create("secrets/encrypted.bin").expect("Failed to create encrypted file");
         encrypted_file.write_all(&ciphertext).expect("Failed to write encrypted data to file");
     
 
-        println!("Ciphertext: {:?}", ciphertext);
+
+
+        let plaintext = cipher.decrypt((&nonce).into(), ciphertext.as_ref()).expect("Failed to decrypt text.");
+    
+
+        //println!("Ciphertext: {:?}", ciphertext);
+        println!("Decrypted plaintext: {:?}", String::from_utf8_lossy(&plaintext));
     }
 
 
@@ -133,31 +144,28 @@ fn parse_cli() -> ArgMatches{
 
 }
 
-fn get_arg_text(parsed: &ArgMatches) -> Option<String>{
+fn get_arg(parsed: &ArgMatches, arg: &str) -> Option<String>{
 
-    parsed.get_one::<String>("text").map(|s| s.to_owned())
+    parsed.get_one::<String>(arg).map(|s| s.to_owned())
 
 }
 
-fn get_arg_file(parsed: &ArgMatches) -> Option<String>{
+// fn get_arg_text(parsed: &ArgMatches) -> Option<String>{
 
-    parsed.get_one::<String>("input").map(|s| s.to_owned())
+//     parsed.get_one::<String>("text").map(|s| s.to_owned())
+
+// }
+
+// fn get_arg_file(parsed: &ArgMatches) -> Option<String>{
+
+//     parsed.get_one::<String>("input").map(|s| s.to_owned())
     
-}
+// }
 
-fn get_arg_out(parsed: &ArgMatches) -> Option<String>{
+// fn get_arg_out(parsed: &ArgMatches) -> Option<String>{
 
-    parsed.get_one::<String>("output").map(|s| s.to_owned())
+//     parsed.get_one::<String>("output").map(|s| s.to_owned())
     
-}
-
-// pub fn get_key() -> Result<String, io::Error> {
-
-//     let mut key = String::new();
-
-//     File::open("secrets/post_it.key")?.read_to_string(&mut key)?;
-
-//     Ok(key)
 // }
 
 
