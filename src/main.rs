@@ -55,17 +55,18 @@ fn main() {
 
         // hackery ahead. I'm in over my head here.
 
-
         let nonce = get_nonce().expect("Failed to retrieve nonce.");
-
         let cipher = Aes256Gcm::new(&key);
+    
+        // generate ciphertext
         let ciphertext = cipher.encrypt((&nonce).into(), raw_text.as_ref()).expect("There was an encryption error.");
     
+        // store it in secrets/
         let mut encrypted_file = File::create("secrets/encrypted.bin").expect("Failed to create encrypted file");
         encrypted_file.write_all(&ciphertext).expect("Failed to write encrypted data to file");
     
+        // decrypt it here to at least demonstrate it works
         let plaintext = cipher.decrypt((&nonce).into(), ciphertext.as_ref()).expect("Failed to decrypt text.");
-    
         //println!("Ciphertext: {:?}", ciphertext);
         println!("Decrypted plaintext: {:?}", String::from_utf8_lossy(&plaintext));
     }

@@ -43,12 +43,7 @@ Usage: post_it [OPTIONS]
 Options:
   -t, --text <TEXT>      Input text enclosed in double quotes, like "encrypt me".
   -i, --input <INPUT>    Input file to read.
-  -o, --output <OUTPUT>  File to output.
   -d, --debug            
   -h, --help             Print help
   -V, --version          Print version
 ```
-
-
-I think I'll use:
-https://docs.rs/aes-gcm/latest/aes_gcm/
