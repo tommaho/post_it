@@ -18,17 +18,12 @@ fn main() {
     let parsed = parse_cli();
     
     let arg_text = get_arg(&parsed, "text");
-    
-
-    //let arg_text = get_arg_text(&parsed);
     let arg_file = get_arg(&parsed, "input");
-    let _arg_output = get_arg(&parsed, "output");
+    //let _arg_output = get_arg(&parsed, "output");
 
     let key = get_key().expect("There was an error with the key.");
 
     let mut raw_text = String::new();
-
-
 
     if let Some(text) = arg_text {
         raw_text = text;
@@ -60,10 +55,8 @@ fn main() {
 
         // hackery ahead. I'm in over my head here.
 
-        let mut nonce_file = File::open("secrets/nonce.bin").expect("Failed to open nonce.");
-        let mut nonce = [0u8; 12];
-        
-        nonce_file.read_exact(&mut nonce).expect("Failed to read nonce.");
+
+        let nonce = get_nonce().expect("Failed to retrieve nonce.");
 
         let cipher = Aes256Gcm::new(&key);
         let ciphertext = cipher.encrypt((&nonce).into(), raw_text.as_ref()).expect("There was an encryption error.");
@@ -71,12 +64,8 @@ fn main() {
         let mut encrypted_file = File::create("secrets/encrypted.bin").expect("Failed to create encrypted file");
         encrypted_file.write_all(&ciphertext).expect("Failed to write encrypted data to file");
     
-
-
-
         let plaintext = cipher.decrypt((&nonce).into(), ciphertext.as_ref()).expect("Failed to decrypt text.");
     
-
         //println!("Ciphertext: {:?}", ciphertext);
         println!("Decrypted plaintext: {:?}", String::from_utf8_lossy(&plaintext));
     }
@@ -105,13 +94,13 @@ fn parse_cli() -> ArgMatches{
             .help("Input file to read.")
             .default_value(None)
         )
-    .arg(Arg::new("output")
-        .value_name("OUTPUT")
-        .short('o')
-        .long("output")
-        .help("File to output.")
-        .default_value(None)
-    )
+    // .arg(Arg::new("output") //hardcoded the output path to secrets/encrypted.bin
+    //     .value_name("OUTPUT")
+    //     .short('o')
+    //     .long("output")
+    //     .help("File to output.")
+    //     .default_value(None)
+    // )
     .arg(
         Arg::new("debug")
             .short('d')
@@ -150,24 +139,13 @@ fn get_arg(parsed: &ArgMatches, arg: &str) -> Option<String>{
 
 }
 
-// fn get_arg_text(parsed: &ArgMatches) -> Option<String>{
 
-//     parsed.get_one::<String>("text").map(|s| s.to_owned())
-
-// }
-
-// fn get_arg_file(parsed: &ArgMatches) -> Option<String>{
-
-//     parsed.get_one::<String>("input").map(|s| s.to_owned())
-    
-// }
-
-// fn get_arg_out(parsed: &ArgMatches) -> Option<String>{
-
-//     parsed.get_one::<String>("output").map(|s| s.to_owned())
-    
-// }
-
+fn get_nonce() -> Result<[u8; 12], io::Error> {
+    let mut nonce_file = File::open("secrets/nonce.bin")?;
+    let mut nonce = [0u8; 12];
+    nonce_file.read_exact(&mut nonce)?;
+    Ok(nonce)
+}
 
 fn get_key() -> Result<Key<Aes256Gcm>, io::Error> {
 
@@ -179,6 +157,13 @@ fn get_key() -> Result<Key<Aes256Gcm>, io::Error> {
 
     Ok(*Key::<Aes256Gcm>::from_slice(&key_bytes))
 }
+
+// fn encrypt_text(nonce: &[u8], raw_text: &[u8], key: &Key) -> Result<Vec<u8>> {
+//     let cipher = Aes256Gcm::new(key);
+//     let ciphertext = cipher.encrypt(Nonce::try_assume_unique_for_key(nonce)?, raw_text)?;
+//     Ok(ciphertext)
+// }
+
 
 fn _encrypt() {
     println!("TODO");
